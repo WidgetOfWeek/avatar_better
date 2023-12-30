@@ -2,8 +2,6 @@ This is a complete avatar package that you can use for your profile and avatar
 
 ## Features
 
-**Features:** 
-
 **Features:**  
 ✔️ Initial Text: Displaying initial text for avatars or placeholders.  
 ✔️ Random Colors: Generating random colors for various elements.  
@@ -29,7 +27,7 @@ This is a complete avatar package that you can use for your profile and avatar
 
 ```yaml
 dependencies:
-  avatar_better: ^0.0.4
+  avatar_better: ^0.0.5
 ```
 
 ## How to use
