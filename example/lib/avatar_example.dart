@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:avatar/avatar.dart';
+import 'package:avatar_better/avatar_better.dart';
 import 'package:flutter/material.dart';
 
 class AvatarExample extends StatefulWidget {

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../tools/gradiant_random_tools.dart';
 import '../tools/gradient_circle_painter.dart';
-import '../tools/text_to-color.dart';
+import '../tools/text_to_color.dart';
 
 extension AvatarCircleExtensions on Circle {
   static String initials(String text) {

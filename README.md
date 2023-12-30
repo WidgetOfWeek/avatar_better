@@ -2,6 +2,8 @@ This is a complete avatar package that you can use for your profile and avatar
 
 ## Features
 
+**Features:** 
+
 **Features:**  
 ✔️ Initial Text: Displaying initial text for avatars or placeholders.  
 ✔️ Random Colors: Generating random colors for various elements.  
@@ -20,17 +22,19 @@ This is a complete avatar package that you can use for your profile and avatar
 ![Capture3](https://github.com/SwanFlutter/flutter_avatars/assets/151648897/8990ce91-bebe-461b-9aff-291a3a1a0a90)
 
 
+
+
 ## Getting started
 
 ```yaml
 dependencies:
-  avatar: ^0.0.1
+  avatar_better: ^0.0.4
 ```
 
 ## How to use
 
 ```dart
-import 'package:avatar/avatar.dart';
+import 'package:avatar_better/avatar_better.dart';
 
 ```
 
@@ -56,6 +60,17 @@ import 'package:avatar/avatar.dart';
 
 ### iOS
 - No configuration required
+
+
+#### macOS installation
+
+Since the macOS implementation uses `file_selector`, you will need to
+add a filesystem access
+[entitlement](https://docs.flutter.dev/platform-integration/macos/building#entitlements-and-the-app-sandbox):
+```xml
+  <key>com.apple.security.files.user-selected.read-only</key>
+  <true/>
+```
 
 ### Web
 - Add following codes inside `<head>` tag in file `web/index.html`:
@@ -102,5 +117,5 @@ Buy me a cup of coffee for 5$.
 ## Additional information
 
 If you have any issues, questions, or suggestions related to this package, please feel free to contact us at [swan.dev1993@gmail.com](mailto:swan.dev1993@gmail.com). We welcome your feedback and will do our best to address any problems or provide assistance.
-For more information about this package, you can also visit our [GitHub repository](https://github.com/SwanFlutter/avatar.git) where you can find additional resources, contribute to the package's development, and file issues or bug reports. We appreciate your contributions and feedback, and we aim to make this package as useful as possible for our users.
+For more information about this package, you can also visit our [GitHub repository](https://github.com/SwanFlutter/avatar_better) where you can find additional resources, contribute to the package's development, and file issues or bug reports. We appreciate your contributions and feedback, and we aim to make this package as useful as possible for our users.
 Thank you for using our package, and we look forward to hearing from you!

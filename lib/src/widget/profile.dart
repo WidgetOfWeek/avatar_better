@@ -2,16 +2,20 @@
 
 import 'dart:io';
 
+import 'package:avatar_better/src/widget/isBorder_avatar.dart';
+import 'package:avatar_better/src/widget/none_border_avatar.dart';
+import 'package:avatar_better/web/isweb.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../tools/gradiant_random_tools.dart';
-import '../tools/gradient_circle_painter.dart';
 import '../tools/image_tools.dart';
-import '../tools/text_to-color.dart';
+import '../tools/text_to_color.dart';
 
 typedef OnPickerChange = void Function(File file);
+typedef OnPickerChangeWeb = void Function(Uint8List file);
 
 extension ProfileExtensions on Profile {
   static String initials(String text) {
@@ -77,11 +81,14 @@ class Profile extends StatefulWidget {
 
   /// [shadowColor]: create shadow widget  (can be null).
   final Color? shadowColor;
+
+  final OnPickerChangeWeb? onPickerChangeWeb;
   Profile({
     Key? key,
     required this.radius,
     required this.text,
     this.onPickerChange,
+    this.onPickerChangeWeb,
     this.image,
     this.imageNetwork,
     this.gradientBackgroundColor,
@@ -116,6 +123,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   File? image;
+  Uint8List? imageBytesWeb;
   ImageTools imageModel = ImageTools();
 
   @override
@@ -123,99 +131,15 @@ class _ProfileState extends State<Profile> {
     return InkResponse(
       child: Stack(
         children: [
-          widget.isBorderAvatar
-              ? CustomPaint(
-                  painter: GradientCirclePainter(
-                    gradientColors: widget.gradientWidthBorder,
-                    withBorder: widget.widthBorder,
-                  ),
-                  child: Material(
-                    type: MaterialType.circle,
-                    elevation: widget.elevation,
-                    shadowColor: widget.shadowColor,
-                    color: Colors.transparent,
-                    borderRadius: null,
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: widget.radius != null ? widget.radius! * 2.2 : 35,
-                      width: widget.radius != null ? widget.radius! * 2.2 : 35,
-                      decoration: BoxDecoration(
-                        color: widget.backgroundColor,
-                        gradient: widget.gradientBackgroundColor,
-                        shape: BoxShape.circle,
-                        image: image != null
-                            ? DecorationImage(
-                                image: FileImage(image!),
-                                fit: BoxFit.cover,
-                              )
-                            : widget.imageNetwork != null
-                                ? DecorationImage(
-                                    image: Image.network(widget.imageNetwork!)
-                                        .image,
-                                    fit: BoxFit.cover,
-                                  )
-                                : widget.image != null
-                                    ? DecorationImage(
-                                        image: Image.asset(widget.image!).image,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
-                      ),
-                      child: (image == null &&
-                              widget.imageNetwork == null &&
-                              widget.image == null &&
-                              widget.text != null)
-                          ? Text(
-                              ProfileExtensions.initials(widget.text!),
-                              style: widget.style,
-                            )
-                          : const Text(''),
-                    ),
-                  ),
-                )
-              : Material(
-                  type: MaterialType.circle,
-                  elevation: widget.elevation,
-                  shadowColor: widget.shadowColor,
-                  borderRadius: null,
-                  color: Colors.transparent,
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: widget.radius != null ? widget.radius! * 2.2 : 35,
-                    width: widget.radius != null ? widget.radius! * 2.2 : 35,
-                    decoration: BoxDecoration(
-                      color: widget.backgroundColor,
-                      gradient: widget.gradientBackgroundColor,
-                      shape: BoxShape.circle,
-                      image: image != null
-                          ? DecorationImage(
-                              image: FileImage(image!),
-                              fit: BoxFit.cover,
-                            )
-                          : widget.imageNetwork != null
-                              ? DecorationImage(
-                                  image:
-                                      Image.network(widget.imageNetwork!).image,
-                                  fit: BoxFit.cover,
-                                )
-                              : widget.image != null
-                                  ? DecorationImage(
-                                      image: Image.asset(widget.image!).image,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                    ),
-                    child: (image == null &&
-                            widget.imageNetwork == null &&
-                            widget.image == null &&
-                            widget.text != null)
-                        ? Text(
-                            ProfileExtensions.initials(widget.text!),
-                            style: widget.style,
-                          )
-                        : const Text(''),
-                  ),
-                ),
+          if (kIsWeb)
+            IsWeb(
+              widget: widget,
+              imageBytesWeb: imageBytesWeb,
+            )
+          else
+            widget.isBorderAvatar
+                ? IsBorderAvatar(widget: widget, image: image)
+                : NoneBorderAvatar(widget: widget, image: image),
           Positioned(
             bottom: widget.radius != null ? widget.radius! / 11 : 0,
             right: widget.radius != null
@@ -255,21 +179,33 @@ class _ProfileState extends State<Profile> {
             children: [
               InkWell(
                 onTap: () async {
-                  final file =
+                  final List<XFile> file =
                       await imageModel.pickImage(ImageSource.gallery, false);
 
                   if (file.isNotEmpty) {
                     final croppedFile =
                         await imageModel.crop(file.first, CropStyle.circle);
-                    if (croppedFile != null) {
+                    // ignore: use_build_context_synchronously
+                    final croppedImageBytes = await imageModel.cropForWeb(
+                        file.first, CropStyle.circle, context);
+
+                    if (kIsWeb && croppedImageBytes != null) {
                       setState(() {
-                        image = File(croppedFile.path);
-                        widget.onPickerChange?.call(image!);
+                        imageBytesWeb = croppedImageBytes;
+                        widget.onPickerChangeWeb?.call(imageBytesWeb!);
+                      });
+                    } else {
+                      setState(() {
+                        if (croppedFile != null) {
+                          image = File(croppedFile.path);
+                          widget.onPickerChange?.call(image!);
+
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                        }
                       });
                     }
                   }
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
                 },
                 child: Material(
                   borderRadius: BorderRadius.circular(12.0),
@@ -302,21 +238,33 @@ class _ProfileState extends State<Profile> {
               ),
               InkWell(
                 onTap: () async {
-                  final file =
+                  final List<XFile> file =
                       await imageModel.pickImage(ImageSource.camera, false);
 
                   if (file.isNotEmpty) {
                     final croppedFile =
                         await imageModel.crop(file.first, CropStyle.circle);
-                    if (croppedFile != null) {
+                    // ignore: use_build_context_synchronously
+                    final croppedImageBytes = await imageModel.cropForWeb(
+                        file.first, CropStyle.circle, context);
+
+                    if (kIsWeb && croppedImageBytes != null) {
                       setState(() {
-                        image = File(croppedFile.path);
-                        widget.onPickerChange?.call(image!);
+                        imageBytesWeb = croppedImageBytes;
+                        widget.onPickerChangeWeb?.call(imageBytesWeb!);
+                      });
+                    } else {
+                      setState(() {
+                        if (croppedFile != null) {
+                          image = File(croppedFile.path);
+                          widget.onPickerChange?.call(image!);
+
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                        }
                       });
                     }
                   }
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
                 },
                 child: Material(
                   color: Colors.grey[100],
